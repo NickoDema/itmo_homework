@@ -20,12 +20,29 @@ trjl2 = traj5(2, qs, qf);
 qt = trjl2(:,:,1);
 dqt = trjl2(:,:,2);
 ddqt = trjl2(:,:,3);
+t = 0:0.01:2;
 
 % Определение обобщенных моментов, элементов вектора С, G и D
 tau = rne(planar2l, qt, dqt, ddqt);
 C = rne(planar2l, qt, dqt, zeros(numrows(tau),planar2l.n), zeros(1,3));
 G = rne(planar2l, qt, zeros(numrows(tau),planar2l.n), zeros(numrows(tau),planar2l.n));
 D = tau - (C + G);
+
+figure(1);
+plot(t,tau(:,1),t,tau(:,2));
+title('tau');
+
+figure(2);
+plot(t,D(:,1),t,D(:,2));
+title('D');
+
+figure(3);
+plot(t,C(:,1),t,C(:,2));
+title('C');
+
+figure(4);
+plot(t,G(:,1),t,G(:,2));
+title('G');
 
 function [R] = make_robot(name, l, m, r, rl)
     n = numrows(l);
@@ -41,17 +58,14 @@ function [R] = make_robot(name, l, m, r, rl)
         L(i).I = [[m(i)*rl(i)^2/2 0 0];...
                   [0 m(i)*(3*rl(i)^2+l(i)^2)/12+m(i)*rl(i)^2 0];...
                   [0 0 m(i)*(3*rl(i)^2+l(i)^2)/12+m(i)*rl(i)^2]];
-        %if i == 1
-        %    R = SerialLink(L(i), 'name', name);
-        %else
-        %    r = SerialLink(L(i));
-        %    R = SerialLink([R r]);
-        %end
-        R = SerialLink(L, 'name', name);
-    end
-    
-    %R = SerialLink(L, 'name', name); 
-    %R.base = ([[1 0 0 0];[0 0 -1 0];[0 1 0 0];[0 0 0 1]]);
+        if i == 1
+            R = SerialLink(L(i), 'name', name);
+        else
+            r = SerialLink(L(i));
+            R = SerialLink([R r]);
+        end
+    end 
+    R.base = ([[1 0 0 0];[0 0 -1 0];[0 1 0 0];[0 0 0 1]]);
 end
 
 function [tr] = traj5(in_t, in_qs, in_qf, in_dqs, in_dqf, in_ddqs, in_ddqf)
